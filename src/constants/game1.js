@@ -3,42 +3,48 @@ const media = ''
 const text = ''
 const background = 'blue'
 const draggable = true;
+const free = false;
+const swap = true;
 const juego = {
   type: 'DragDrop',
   items: [
     {
       id: 0, // Identificador único
-      role: 0,
-      name: 'Lobo blanco',
-      path: 'loboBlanco.png',
-      type: 'IMG',
-      draggable,
+      role: 0, // Puede ser 0 => Query ||1 => Answer
+      name: 'Lobo blanco', // Nombre para identificarlo o alt
+      path: 'loboBlanco.png', // Puede ser base64, imagen local o svg
+      type: 'IMG', // Tipo (IMG / VIDEO / DIV)
+      draggable, // Determina si se puede arrastrar
+      free, // Determina si el movimiento es libre (cuanod es true no retorna a su posición)
+      swap, // Determina si ha de intercambiarse o no por el target
       position: {
         x: 5, // Esto es en porcentajes
         y: 5
       },
       size: {
-        w: 140, 
+        w: 140, // Tamaño en pixeles (se puede cambiar a porcentaje)
         h: 120
       },
       linkedTo: [2, 4, 5, 6] // Esto sólo representa los success
     },
     {
-      id: 1, // Identificador único
+      id: 1,
       role: 0,
       name: 'Lobo negro',
       path: 'loboNegro.png',
       type: 'IMG',
       draggable,
+      free,
+      swap,
       position: {
-        x: 20, // Esto es en porcentajes
+        x: 20,
         y: 5
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
-      linkedTo: [3, 4, 6] // Esto sólo representa los success
+      linkedTo: [3, 4, 6]
     },
     {
       id: 2,
@@ -55,7 +61,7 @@ const juego = {
         y: 80
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
     },
@@ -74,7 +80,7 @@ const juego = {
         y: 80
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
     },
@@ -93,7 +99,7 @@ const juego = {
         y: 80
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
     },
@@ -112,7 +118,7 @@ const juego = {
         y: 80
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
     },
@@ -132,7 +138,7 @@ const juego = {
         y: 80
       },
       size: {
-        w: 140, 
+        w: 140,
         h: 120
       },
     }

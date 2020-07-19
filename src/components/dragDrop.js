@@ -19,10 +19,12 @@ export default function ({
     ...props
   })
   const [dragging, setDragging] = useState(undefined)
-  const [positions, setPositions] = useState()
+  // const [positions, setPositions] = useState()
   const [dragged, setDragged] = useState(null)
   const [tries, setTries] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [overs, setOvers] = useState([])
+
   const [coords, setCoords] = useState({
     x: 0,
     y: 0
@@ -46,8 +48,8 @@ export default function ({
     const {
       items
     } = obj.data
-    const positions = items.map(el => el.position)
-    setPositions(items.map(el => el.position))
+    // const positions = items.map(el => el.position)
+    // setPositions(items.map(el => el.position))
     asyncItems(items)
     setTries(obj.data.tries)
     setSuccess(obj.data.solution)
@@ -149,7 +151,14 @@ export default function ({
   }
 
 
-  const checkPositions = (l1, r1, l2, r2) => (r1.y >= l2.y && r2.y >= l1.y && r1.x >= l2.x && r2.x >= l1.x)
+  const checkPositions = (l1, r1, l2, r2) => {
+    if (r1.y >= l2.y && r2.y >= l1.y && r1.x >= l2.x && r2.x >= l1.x) {
+      // We get all the interactions between the areas to determinate the overlayed size when two or more target areas are under the source area
+       return ([r1.y - l2.y, r2.y - l1.y, r1.x - l2.x, r2.x - l1.x].sort((a, b) => a - b).splice(0, 2).reduce((a,b) => a + b, 0))
+    }
+    return 0
+  }
+
 
   const isOver = (a, b) => {
     // We build a class Point to set the coordinates
@@ -185,6 +194,19 @@ export default function ({
     }
   }, [size])
 
+  useEffect(() => {
+    overs.forEach((el, n) => {
+      if (el !== 0) {
+        refs.current[n].current.className = Math.max(...overs) === el ? 'overOk' : 'overKo'
+      } else
+      refs.current[n].current.className = 'default'
+    })
+    return () => {
+      // TODO Something
+    }
+  }, [overs])
+
+
 
   const handler = useCallback(
     ({
@@ -206,11 +228,14 @@ export default function ({
   useEventListener('resize', screenResized);
 
   const mouseDown = ev => {
+
     ev.preventDefault();
 
     const n = Number(ev.currentTarget.dataset.id)
     setDragging(n)
     ev.preventDefault();
+
+    setDragged(n)
 
     ev.target.addEventListener('mousemove', dragEl, false);
 
@@ -222,8 +247,11 @@ export default function ({
   }
 
   const mouseOver = ev => {
+
     const over = ev.currentTarget
     const n = Number(ev.currentTarget.dataset.id)
+
+    console.log(items[n].name)
 
     items[n].itCoords = {
       init: {
@@ -235,12 +263,45 @@ export default function ({
         y: ev.pageY
       }
     }
-
+    let arr = []
     items.forEach((el, i) => {
-      if (i !== n) refs.current[i].current.style.opacity = (isOver(items[n], items[i])) ? '0.5' : '1'
+
+      if (i !== n) {
+        const size = isOver(items[n], items[i])
+          // refs.current[i].current
+        arr.push(size)
+      } else arr.push(0)
     })
+    setOvers(arr)
+  }
+
+  const mouseLeave = ev => {
+    const n = Number(ev.currentTarget.dataset.id)
+    console.log('leave ', n, dragged)
+    if (n === dragged) {
+      setDragged(null)
+      if (overs.every(el => el === 0)) {
+        gotToPreviousPoint(n)
+      } else {
+        console.log(n, overs[0])
+        // setItems([...(swapElements(n, overs[0]))])
+        // gotToPreviousPoint(n)
+      }
+      setOvers([])
+    }
+    else {
+
+      console.log('nada que hacer aquí')
+    }
 
   }
+
+  const gotToPreviousPoint = n => {
+    const { x, y } = percentToabsolute(items[n].position)
+    refs.current[n].current.style.left = x + 'px'
+    refs.current[n].current.style.top = y + 'px'
+  }
+
 
   document.addEventListener('touchmove', e => e.preventDefault, {
     passive: false
@@ -372,12 +433,12 @@ export default function ({
   }
 
 
-  const getStyle = i => {
+  const getStyle = ({ position: { x, y }}) => {
     // To be removed...
     return {
       'position': 'absolute',
-      'left': `${positions[i].x}%`,
-      'top': `${positions[i].y}%`,
+      'left': `${x}%`,
+      'top': `${y}%`,
       'width': '140px',
       'height': '120px'
     }
@@ -405,15 +466,17 @@ export default function ({
           items.map((item, i) => {
             return <img className={dragging}
               ref={refs.current[i]}
-              style={getStyle(i)}
+              style={getStyle(item)}
               src={item.path}
               data-id={i}
               key={i}
               title={item.name}
+              className='default'
               onTouchStart={touchStart}
               onMouseDown={mouseDown}
-              onTouchStart={touchStart}
               onMouseMove={mouseOver}
+              onMouseLeave={mouseLeave}
+              onTouchStart={touchStart}
               draggable={item.draggable}
               onDragStart={dragStart}
               onDragLeave={dragLeave}

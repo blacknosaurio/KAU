@@ -1,0 +1,12 @@
+{
+  "git.ignoreLimitWarning": true,
+  "editor.formatOnSave": true,
+  "prettier.singleQuote": true,
+  "cSpell.words": [
+    "Aplicacion",
+    "Smtp",
+    "ionicons",
+    "myapp",
+    "nocache"
+  ]
+}
